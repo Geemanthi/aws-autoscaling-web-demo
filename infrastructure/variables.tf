@@ -22,3 +22,13 @@ variable "project" {
     type        = string
     description = "The project name"
 }
+
+variable "private_subnets" {
+    type        = map(string)
+    description = "A map of private subnets with availability zones and CIDR block"
+}
+
+variable "public_subnets" {
+    type        = map(string)
+    description = "A map of public subnets with availability zones and CIDR blocks"
+}

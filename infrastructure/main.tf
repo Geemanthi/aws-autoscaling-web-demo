@@ -6,3 +6,26 @@ resource "aws_vpc" "vpc" {
     Name         = "vpc-${lower(local.name_suffix)}"
   }, local.tags)
 }
+
+# default route table
+resource "aws_default_route_table" "default_route_table" {
+  default_route_table_id = aws_vpc.vpc.default_route_table_id
+
+  tags = merge({
+    Name         = "rt-${lower(local.name_suffix)}-default"
+  }, local.tags)
+}
+
+# default route table association
+resource "aws_main_route_table_association" "default_route_table_association" {
+  vpc_id         = aws_vpc.vpc.id
+  route_table_id = aws_default_route_table.default_route_table.id
+}
+
+# default route table route
+resource "aws_route" "default_route" {
+  route_table_id         = aws_default_route_table.default_route_table.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
+}
+
