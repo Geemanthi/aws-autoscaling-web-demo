@@ -7,8 +7,8 @@ resource "aws_subnet" "private_subnet" {
   availability_zone = keys(var.private_subnets)[count.index]
 
   tags = merge({
-    Name         = "sbnt-${lower(local.name_suffix)}-prvt-${count.index + 1}",
-  }, local.tags)
+    Name         = "sbnt-${lower(var.name_suffix)}-prvt-${count.index + 1}",
+  }, var.tags)
 }
 
 # private route table
@@ -16,8 +16,8 @@ resource "aws_route_table" "private_route_table" {
   vpc_id = aws_vpc.vpc.id
 
   tags = merge({
-    Name         = "rt-${lower(local.name_suffix)}-prvt"
-  }, local.tags)
+    Name         = "rt-${lower(var.name_suffix)}-prvt"
+  }, var.tags)
 }
 
 # private route table association

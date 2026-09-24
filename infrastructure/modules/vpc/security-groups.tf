@@ -3,12 +3,12 @@ resource "aws_default_security_group" "default_security_group" {
   vpc_id = aws_vpc.vpc.id
 
   tags = merge({
-    Name         = "securitygroup-${lower(local.name_suffix)}-default"
-  }, local.tags)
+    Name         = "securitygroup-${lower(var.name_suffix)}-default"
+  }, var.tags)
 }
 
 resource "aws_security_group" "aws_internet_egress" {
-  name        = "securitygroup-${lower(local.name_suffix)}-egress"
+  name        = "securitygroup-${lower(var.name_suffix)}-egress"
   description = "Security group to support egress traffic"
   vpc_id      = aws_vpc.vpc.id
 
@@ -26,6 +26,6 @@ resource "aws_security_group" "aws_internet_egress" {
   }
 
   tags = merge({
-    Name         = "securitygroup-${lower(local.name_suffix)}-egress"
-  }, local.tags)
+    Name         = "securitygroup-${lower(var.name_suffix)}-egress"
+  }, var.tags)
 }

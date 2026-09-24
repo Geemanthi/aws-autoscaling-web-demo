@@ -9,8 +9,8 @@ resource "aws_subnet" "public_subnet" {
   map_public_ip_on_launch                     = true
 
   tags = merge({
-    Name         = "sbnt-${lower(local.name_suffix)}-pblc-${count.index + 1}",
-  }, local.tags)
+    Name         = "sbnt-${lower(var.name_suffix)}-pblc-${count.index + 1}",
+  }, var.tags)
 }
 
 # public route table
@@ -18,8 +18,8 @@ resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.vpc.id
 
   tags = merge({
-    Name         = "rt-${lower(local.name_suffix)}-pblc"
-  }, local.tags)
+    Name         = "rt-${lower(var.name_suffix)}-pblc"
+  }, var.tags)
 }
 
 # public route table association
