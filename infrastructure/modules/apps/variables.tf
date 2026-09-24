@@ -52,3 +52,15 @@ variable "public_subnet_ids" {
   description = "The IDs of the public subnets for the load balancer"
   type        = list(string)
 }
+
+variable "domain_name" {
+  description = "The domain name for the application"
+  type        = string
+  default     = "example.com"
+}
+
+variable "enable_https" {
+  description = "Whether to enable HTTPS for the application"
+  type        = bool
+  default     = false
+}
