@@ -24,7 +24,7 @@ jobs:
     with:
       environment: dev
       apply: false
-      build: true
+      build: false
     secrets:
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
       AWS_TFSTATE_BUCKET: ${{ secrets.AWS_TFSTATE_BUCKET }}
