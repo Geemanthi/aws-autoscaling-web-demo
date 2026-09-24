@@ -1,0 +1,236 @@
+name: "Terraform CI Template"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Environment name (dev, staging, prod)"
+        required: true
+        type: string
+      build:
+        description: "Whether to build and push container image"
+        required: false
+        type: boolean
+        default: false
+      apply:
+        description: "Whether to run apply after plan"
+        required: false
+        type: boolean
+        default: false
+      destroy:
+        description: "Whether to destroy the environment"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      AWS_ROLE_ARN:
+        required: true
+      AWS_TFSTATE_BUCKET:
+        required: true
+      AWS_DEFAULT_REGION:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+env:
+  TF_LOG: ERROR
+  PRODUCT: nginx-webapp
+  SERVICE: infrastructure-core
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint --recursive
+
+  validate:
+    name: validate
+    runs-on: ubuntu-latest
+    needs: lint
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init (no backend)
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        run: terraform validate
+
+  build:
+    runs-on: ubuntu-latest
+    if: inputs.build == true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set lowercase owner
+        id: owner
+        run: echo "name=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./infrastructure/docker
+          push: true
+          tags: |
+            ghcr.io/${{ steps.owner.outputs.name }}/ha-nginx:latest
+            ghcr.io/${{ steps.owner.outputs.name }}/ha-nginx:${{ github.sha }}
+
+  plan:
+    name: plan
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS OIDC credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: github-actions-terraform
+
+      - run: aws sts get-caller-identity
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.AWS_TFSTATE_BUCKET }}" \
+            -backend-config="key=$PRODUCT/$SERVICE/${{ inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_DEFAULT_REGION }}"
+
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -var-file=${{ inputs.environment }}.tfvars \
+            -var "env=${{ inputs.environment }}" \
+            -out=tfplan
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: infrastructure/tfplan
+          retention-days: 1
+  
+  apply:
+    name: apply
+    needs: plan
+    if: inputs.apply == true
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download plan artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tfplan-${{ inputs.environment }}
+          path: infrastructure
+
+      - name: Configure AWS OIDC credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: github-actions-terraform
+
+      - run: aws sts get-caller-identity
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.AWS_TFSTATE_BUCKET }}" \
+            -backend-config="key=$PRODUCT/$SERVICE/${{ inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_DEFAULT_REGION }}"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan 
+ 
+  destroy:
+    name: destroy
+    if: inputs.destroy == true
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS OIDC credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: github-actions-terraform
+
+      - run: aws sts get-caller-identity
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.AWS_TFSTATE_BUCKET }}" \
+            -backend-config="key=$PRODUCT/$SERVICE/${{ inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_DEFAULT_REGION }}"
+
+      - name: Terraform Plan Destroy
+        run: |
+          terraform plan -destroy \
+            -var-file=${{ inputs.environment }}.tfvars \
+            -var "env=${{ inputs.environment }}" \
+            -out=destroy.tfplan
+
+      - name: Terraform Apply Destroy
+        run: terraform apply -auto-approve destroy.tfplan
