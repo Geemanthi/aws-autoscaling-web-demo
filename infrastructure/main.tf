@@ -18,9 +18,9 @@ module "apps" {
   private_subnet_ids = module.vpc.private_subnet_ids
   public_subnet_ids  = module.vpc.public_subnet_ids
   enable_https       = false #Staying http, cannot validate a domain for now.
-  instance_type      = "t3.micro"
-  max_size           = 4
-  min_size           = 2
-  desired_capacity   = 2
+  instance_type      = var.instance_type
+  max_size           = var.max_size
+  min_size           = var.min_size
+  desired_capacity   = var.desired_capacity
 }
 
