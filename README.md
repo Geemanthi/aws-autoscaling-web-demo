@@ -89,8 +89,6 @@ with:
 
 The workflow saves the plan as the `tfplan-dev` artifact and the apply job downloads and applies that exact plan. Do not manually run `terraform apply` against a different plan if reviewing the workflow artifact.
 
-
-
 ### Local Terraform
 
 Run these commands from the `infrastructure` directory after configuring AWS credentials and the S3 backend:
