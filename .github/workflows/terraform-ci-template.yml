@@ -17,6 +17,11 @@ on:
         required: false
         type: boolean
         default: false
+      destroy:
+        description: "Whether to destroy the environment"
+        required: false
+        type: boolean
+        default: false
     secrets:
       AWS_ROLE_ARN:
         required: true
