@@ -1,5 +1,5 @@
 resource "aws_launch_template" "nginx" {
-  name_prefix   = "lt-${local.name_suffix}"
+  name_prefix   = "lt-${var.name_suffix}"
   image_id      = data.aws_ami.al2023.id
   instance_type = var.instance_type
 
@@ -10,9 +10,9 @@ resource "aws_launch_template" "nginx" {
   tag_specifications {
     resource_type = "instance"
     tags = merge(
-      local.tags,
+      var.tags,
       {
-        Name = "lt-${local.name_suffix}"
+        Name = "lt-${var.name_suffix}"
       }
   )
   }
@@ -23,8 +23,8 @@ resource "aws_launch_template" "nginx" {
 }
 
 resource "aws_autoscaling_group" "nginx" {
-  name                = "asg-${local.name_suffix}"
-  vpc_zone_identifier = module.vpc.private_subnet_ids
+  name                = "asg-${var.name_suffix}"
+  vpc_zone_identifier = var.private_subnet_ids
   target_group_arns   = [aws_lb_target_group.nginx.arn]
 
   min_size         = var.min_size
@@ -41,7 +41,7 @@ resource "aws_autoscaling_group" "nginx" {
 
   tag {
     key                 = "Name"
-    value               = "asg-${local.name_suffix}"
+    value               = "asg-${var.name_suffix}"
     propagate_at_launch = true
   }
 }

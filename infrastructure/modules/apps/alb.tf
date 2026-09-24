@@ -1,20 +1,20 @@
 resource "aws_lb" "nginx" {
-  name               = "alb-${local.name_suffix}"
+  name               = "alb-${var.name_suffix}"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets            = module.vpc.public_subnet_ids
+  subnets            = var.public_subnet_ids
 
   tags = merge({
-    Name         = "alb-${local.name_suffix}"
-  }, local.tags)
+    Name         = "alb-${var.name_suffix}"
+  }, var.tags)
 }
 
 resource "aws_lb_target_group" "nginx" {
-  name     = "tg-${local.name_suffix}"
+  name     = "tg-${var.name_suffix}"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = module.vpc.vpc_id
+  vpc_id   = var.vpc_id
 
   health_check {
     path                = "/"
@@ -27,8 +27,8 @@ resource "aws_lb_target_group" "nginx" {
   }
 
   tags = merge({
-    Name = "tg-${local.name_suffix}"
-  }, local.tags)
+    Name = "tg-${var.name_suffix}"
+  }, var.tags)
 }
 
 resource "aws_lb_listener" "http" {

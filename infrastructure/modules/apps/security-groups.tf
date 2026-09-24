@@ -1,7 +1,7 @@
 resource "aws_security_group" "alb" {
-  name        = "securitygroup-${local.name_suffix}-alb"
+  name        = "securitygroup-${var.name_suffix}-alb"
   description = "Allow inbound HTTP from the internet"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = var.vpc_id
 
   ingress {
     description = "HTTP from anywhere"
@@ -19,14 +19,14 @@ resource "aws_security_group" "alb" {
   }
 
   tags = merge({
-    Name = "securitygroup-${local.name_suffix}-alb"
-  }, local.tags)
+    Name = "securitygroup-${var.name_suffix}-alb"
+  }, var.tags)
 }
 
 resource "aws_security_group" "instance" {
-  name        = "securitygroup-${local.name_suffix}-instance"
+  name        = "securitygroup-${var.name_suffix}-instance"
   description = "Allow HTTP only from the ALB"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = var.vpc_id
 
   ingress {
     description     = "HTTP from ALB"
@@ -44,6 +44,6 @@ resource "aws_security_group" "instance" {
   }
 
   tags = merge({
-    Name = "securitygroup-${local.name_suffix}-instance"
-  }, local.tags)
+    Name = "securitygroup-${var.name_suffix}-instance"
+  }, var.tags)
 }

@@ -7,3 +7,15 @@ module "vpc" {
 	name_suffix     = local.name_suffix
 	tags            = local.tags
 }
+
+module "apps" {
+	source = "./modules/apps"
+
+	container_image   = var.container_image
+	name_suffix       = local.name_suffix
+	tags              = local.tags
+	vpc_id            = module.vpc.vpc_id
+	private_subnet_ids = module.vpc.private_subnet_ids
+	public_subnet_ids  = module.vpc.public_subnet_ids
+}
+
