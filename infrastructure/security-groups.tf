@@ -1,5 +1,5 @@
 resource "aws_security_group" "alb" {
-  name        = "sg-${local.name_suffix}-alb"
+  name        = "securitygroup-${local.name_suffix}-alb"
   description = "Allow inbound HTTP from the internet"
   vpc_id      = module.vpc.vpc_id
 
@@ -19,6 +19,6 @@ resource "aws_security_group" "alb" {
   }
 
   tags = merge({
-    Name = "sg-${local.name_suffix}-alb"
+    Name = "securitygroup-${local.name_suffix}-alb"
   }, local.tags)
 }
