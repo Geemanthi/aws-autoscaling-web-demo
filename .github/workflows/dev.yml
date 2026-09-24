@@ -22,7 +22,8 @@ jobs:
     uses: ./.github/workflows/terraform-ci-template.yml
     with:
       environment: dev
-      apply: true
+      apply: false
+      build: true
     secrets:
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
       AWS_TFSTATE_BUCKET: ${{ secrets.AWS_TFSTATE_BUCKET }}

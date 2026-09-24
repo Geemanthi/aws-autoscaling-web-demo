@@ -7,6 +7,11 @@ on:
         description: "Environment name (dev, staging, prod)"
         required: true
         type: string
+      build:
+        description: "Whether to build and push container image"
+        required: false
+        type: boolean
+        default: false
       apply:
         description: "Whether to run apply after plan"
         required: false
@@ -51,6 +56,28 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+  build:
+    runs-on: ubuntu-latest
+    if: inputs.build == true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./infrastructure/docker
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/ha-test:latest
+            ghcr.io/${{ github.repository_owner }}/ha-test:${{ github.sha }}
 
   plan:
     name: plan
