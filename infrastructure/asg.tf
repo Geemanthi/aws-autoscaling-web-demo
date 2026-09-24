@@ -24,7 +24,7 @@ resource "aws_launch_template" "nginx" {
 
 resource "aws_autoscaling_group" "nginx" {
   name                = "asg-${local.name_suffix}"
-  vpc_zone_identifier = module.vpc.private_subnets
+  vpc_zone_identifier = module.vpc.private_subnet_ids
   target_group_arns   = [aws_lb_target_group.nginx.arn]
 
   min_size         = var.min_size
