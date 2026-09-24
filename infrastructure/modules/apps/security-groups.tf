@@ -1,3 +1,4 @@
+# Allows public HTTP and HTTPS traffic to reach the Application Load Balancer.
 resource "aws_security_group" "alb" {
   name        = "securitygroup-${var.name_suffix}-alb"
   description = "Allow inbound HTTP from the internet"
@@ -10,7 +11,7 @@ resource "aws_security_group" "alb" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   ingress {
     description = "HTTPS from anywhere"
     from_port   = 443
@@ -31,6 +32,7 @@ resource "aws_security_group" "alb" {
   }, var.tags)
 }
 
+# Allows application instances to receive web traffic from the ALB.
 resource "aws_security_group" "instance" {
   name        = "securitygroup-${var.name_suffix}-instance"
   description = "Allow HTTP only from the ALB"
@@ -43,7 +45,7 @@ resource "aws_security_group" "instance" {
     protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
-  
+
   ingress {
     description     = "HTTPS from ALB"
     from_port       = 443

@@ -1,3 +1,4 @@
+# Defines the EC2 launch configuration for NGINX application instances.
 resource "aws_launch_template" "nginx" {
   name_prefix   = "lt-${var.name_suffix}"
   image_id      = data.aws_ami.al2023.id
@@ -14,7 +15,7 @@ resource "aws_launch_template" "nginx" {
       {
         Name = "lt-${var.name_suffix}"
       }
-  )
+    )
   }
 
   lifecycle {
@@ -22,6 +23,7 @@ resource "aws_launch_template" "nginx" {
   }
 }
 
+# Maintains the desired number of NGINX instances across the private subnets.
 resource "aws_autoscaling_group" "nginx" {
   name                = "asg-${var.name_suffix}"
   vpc_zone_identifier = var.private_subnet_ids

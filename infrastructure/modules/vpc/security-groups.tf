@@ -3,7 +3,7 @@ resource "aws_default_security_group" "default_security_group" {
   vpc_id = aws_vpc.vpc.id
 
   tags = merge({
-    Name         = "securitygroup-${lower(var.name_suffix)}-default"
+    Name = "securitygroup-${lower(var.name_suffix)}-default"
   }, var.tags)
 }
 
@@ -26,6 +26,6 @@ resource "aws_security_group" "aws_internet_egress" {
   }
 
   tags = merge({
-    Name         = "securitygroup-${lower(var.name_suffix)}-egress"
+    Name = "securitygroup-${lower(var.name_suffix)}-egress"
   }, var.tags)
 }

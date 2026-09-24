@@ -1,6 +1,6 @@
 variable "container_image" {
-    type        = string
-    description = "The container image to deploy"
+  type        = string
+  description = "The container image to deploy"
 }
 
 variable "instance_type" {

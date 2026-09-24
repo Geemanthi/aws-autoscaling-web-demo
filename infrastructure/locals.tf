@@ -12,5 +12,5 @@ locals {
     ApplicationName     = "nginx"
   }
 
-  name_suffix     = "${lower(var.region_code)}-${lower(var.organization)}-${lower(var.env)}-${lower(var.project)}"
+  name_suffix = "${lower(var.region_code)}-${lower(var.organization)}-${lower(var.env)}-${lower(var.project)}"
 }

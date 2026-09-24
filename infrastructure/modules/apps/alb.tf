@@ -1,3 +1,4 @@
+# Creates the public Application Load Balancer for the NGINX application.
 resource "aws_lb" "nginx" {
   name               = "alb-${var.name_suffix}"
   internal           = false
@@ -6,10 +7,11 @@ resource "aws_lb" "nginx" {
   subnets            = var.public_subnet_ids
 
   tags = merge({
-    Name         = "alb-${var.name_suffix}"
+    Name = "alb-${var.name_suffix}"
   }, var.tags)
 }
 
+# Registers the NGINX instances as HTTP targets for the load balancer.
 resource "aws_lb_target_group" "nginx" {
   name     = "tg-${var.name_suffix}"
   port     = 80
@@ -31,6 +33,7 @@ resource "aws_lb_target_group" "nginx" {
   }, var.tags)
 }
 
+# Handles HTTP traffic and forwards it or redirects it based on HTTPS configuration.
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.nginx.arn
   port              = 80
@@ -52,6 +55,7 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+# Creates the HTTPS listener when HTTPS is enabled.
 resource "aws_lb_listener" "https" {
   count = var.enable_https ? 1 : 0
 

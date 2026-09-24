@@ -3,7 +3,7 @@ resource "aws_vpc" "vpc" {
   enable_dns_hostnames = true
 
   tags = merge({
-    Name         = "vpc-${lower(var.name_suffix)}"
+    Name = "vpc-${lower(var.name_suffix)}"
   }, var.tags)
 }
 
@@ -12,7 +12,7 @@ resource "aws_default_route_table" "default_route_table" {
   default_route_table_id = aws_vpc.vpc.default_route_table_id
 
   tags = merge({
-    Name         = "rt-${lower(var.name_suffix)}-default"
+    Name = "rt-${lower(var.name_suffix)}-default"
   }, var.tags)
 }
 
