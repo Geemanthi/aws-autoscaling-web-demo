@@ -81,8 +81,8 @@ jobs:
           context: ./infrastructure/docker
           push: true
           tags: |
-            ghcr.io/${{ steps.owner.outputs.name }}/ha-test:latest
-            ghcr.io/${{ steps.owner.outputs.name }}/ha-test:${{ github.sha }}
+            ghcr.io/${{ steps.owner.outputs.name }}/ha-nginx:latest
+            ghcr.io/${{ steps.owner.outputs.name }}/ha-nginx:${{ github.sha }}
 
   plan:
     name: plan
