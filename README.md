@@ -6,15 +6,7 @@ A highly available NGINX web application deployed on AWS with Terraform. The app
 
 ## Architecture
 
-```text
-Internet
-	 |
-Public Application Load Balancer
-	 |
-Private subnets in multiple Availability Zones
-	 |
-EC2 Auto Scaling Group running the NGINX container
-```
+![Architecture diagram](docs/nginx-app.png)
 
 Terraform creates:
 
@@ -74,50 +66,6 @@ The IAM role should trust the repository's GitHub Actions OIDC identity and have
 
 To destroy the development environment, manually run the `Destroy Infrastructure` workflow. It requires selecting `dev` and entering `dev` as the confirmation value.
 
-## How to Destroy Infrastructure
-
-### GitHub Actions
-
-The recommended method is the protected `Destroy Infrastructure` workflow:
-
-1. Open the repository's **Actions** tab.
-2. Select **Destroy Infrastructure**.
-3. Click **Run workflow**.
-4. Select `dev` as the environment.
-5. Enter `dev` exactly in the confirmation field.
-6. Click **Run workflow** again.
-
-The workflow first verifies that the confirmation text matches the selected environment. It then authenticates to AWS through GitHub OIDC, initializes the S3 backend, creates a `terraform plan -destroy`, and applies that destroy plan automatically. This removes the Terraform-managed VPC, networking, load balancer, Auto Scaling resources, and related application resources for the selected environment.
-
-Do not start a destroy run while another plan or apply is modifying the same state. Confirm that the correct AWS account, region, environment, and state bucket are selected before running it. The destroy action is permanent; data or resources created outside this Terraform state are not removed automatically.
-
-### Local Terraform
-
-From the `infrastructure` directory, configure AWS credentials and initialize the same backend used by the environment:
-
-```bash
-terraform init \
-	-backend-config="bucket=<terraform-state-bucket>" \
-	-backend-config="key=nginx-webapp/infrastructure-core/dev/terraform.tfstate" \
-	-backend-config="region=us-east-1"
-```
-
-Create and review a destroy plan:
-
-```bash
-terraform plan -destroy \
-	-var-file=dev.tfvars \
-	-var="env=dev" \
-	-out=destroy.tfplan
-```
-
-Apply the reviewed destroy plan:
-
-```bash
-terraform apply destroy.tfplan
-```
-
-Use the saved plan so the resources reviewed during planning are the resources Terraform attempts to remove. Do not use `terraform destroy -auto-approve` unless you intentionally want to skip the review step.
 
 ## How to run Plan and Apply
 
@@ -166,6 +114,23 @@ terraform apply tfplan
 ```
 
 To plan without creating or changing resources, use `terraform plan` without `terraform apply`. The plan may become stale if the state or configuration changes, so generate a new plan before applying when that happens.
+
+## How to Destroy Infrastructure
+
+### GitHub Actions
+
+The recommended method is the protected `Destroy Infrastructure` workflow:
+
+1. Open the repository's **Actions** tab.
+2. Select **Destroy Infrastructure**.
+3. Click **Run workflow**.
+4. Select `dev` as the environment.
+5. Enter `dev` exactly in the confirmation field.
+6. Click **Run workflow** again.
+
+The workflow first verifies that the confirmation text matches the selected environment. It then authenticates to AWS through GitHub OIDC, initializes the S3 backend, creates a `terraform plan -destroy`, and applies that destroy plan automatically. This removes the Terraform-managed VPC, networking, load balancer, Auto Scaling resources, and related application resources for the selected environment.
+
+Do not start a destroy run while another plan or apply is modifying the same state. Confirm that the correct AWS account, region, environment, and state bucket are selected before running it. The destroy action is permanent; data or resources created outside this Terraform state are not removed automatically.
 
 ## Container Image
 
