@@ -1,0 +1,28 @@
+name: "Deploy Dev"
+
+on:
+  push:
+    branches:
+      - main
+      - feature/**
+    paths:
+      - "infrastructure/**"
+      - ".github/workflows/**"
+  pull_request:
+    paths:
+      - "infrastructure/**"
+      - ".github/workflows/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  dev:
+    uses: ./.github/workflows/terraform-ci-template.yml
+    with:
+      environment: dev
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_TFSTATE_BUCKET: ${{ secrets.AWS_TFSTATE_BUCKET }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
