@@ -1,0 +1,45 @@
+name: "Destroy Infrastructure"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to destroy"
+        required: true
+        type: choice
+        options:
+          - dev
+      confirm:
+        description: 'Type the environment name exactly to confirm destroy'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  packages: write
+
+jobs:
+  check-confirmation:
+    name: check-confirmation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify confirmation input matches environment
+        run: |
+          if [ "${{ inputs.confirm }}" != "${{ inputs.environment }}" ]; then
+            echo "::error::Confirmation text '${{ inputs.confirm }}' does not match selected environment '${{ inputs.environment }}'. Aborting destroy."
+            exit 1
+          fi
+          echo "Confirmation matched. Proceeding with destroy of '${{ inputs.environment }}'."
+
+  destroy:
+    name: destroy-${{ inputs.environment }}
+    needs: check-confirmation
+    uses: ./.github/workflows/terraform-ci-template.yml
+    with:
+      environment: ${{ inputs.environment }}
+      destroy: true
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_TFSTATE_BUCKET: ${{ secrets.AWS_TFSTATE_BUCKET }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}

@@ -167,3 +167,43 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan 
+ 
+  destroy:
+    name: destroy
+    if: inputs.destroy == true
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS OIDC credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          role-session-name: github-actions-terraform
+
+      - run: aws sts get-caller-identity
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.AWS_TFSTATE_BUCKET }}" \
+            -backend-config="key=$PRODUCT/$SERVICE/${{ inputs.environment }}/terraform.tfstate" \
+            -backend-config="region=${{ secrets.AWS_DEFAULT_REGION }}"
+
+      - name: Terraform Plan Destroy
+        run: |
+          terraform plan -destroy \
+            -var-file=${{ inputs.environment }}.tfvars \
+            -var "env=${{ inputs.environment }}" \
+            -out=destroy.tfplan
+
+      - name: Terraform Apply Destroy
+        run: terraform apply -auto-approve destroy.tfplan
