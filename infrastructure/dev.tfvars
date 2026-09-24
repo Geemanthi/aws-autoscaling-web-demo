@@ -12,3 +12,5 @@ public_subnets = {
   "us-east-1a" = "10.0.10.0/24"
   "us-east-1b" = "10.0.11.0/24"
 }
+
+container_image = "ghcr.io/geemanthi/ha-nginx:latest"

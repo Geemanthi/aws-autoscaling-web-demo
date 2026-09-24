@@ -32,3 +32,32 @@ variable "public_subnets" {
     type        = map(string)
     description = "A map of public subnets with availability zones and CIDR blocks"
 }
+
+variable "container_image" {
+    type        = string
+    description = "The container image to deploy"
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "min_size" {
+  description = "Minimum number of instances"
+  type        = number
+  default     = 2
+}
+
+variable "max_size" {
+  description = "Maximum number of instances"
+  type        = number
+  default     = 4
+}
+
+variable "desired_capacity" {
+  description = "Desired number of instances"
+  type        = number
+  default     = 2
+}
