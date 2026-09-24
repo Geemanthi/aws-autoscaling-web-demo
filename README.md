@@ -141,6 +141,8 @@ with:
 
 The workflow saves the plan as the `tfplan-dev` artifact and the apply job downloads and applies that exact plan. Do not manually run `terraform apply` against a different plan if reviewing the workflow artifact.
 
+
+
 ### Local Terraform
 
 Run these commands from the `infrastructure` directory after configuring AWS credentials and the S3 backend:
@@ -179,6 +181,30 @@ The Terraform development variables currently reference:
 ```text
 ghcr.io/geemanthi/ha-nginx:latest
 ```
+
+### Publish with GitHub Actions
+
+The reusable workflow builds and publishes the image only when the caller sets `build: true`. Update the `dev` job in `.github/workflows/dev.yml`:
+
+```yaml
+with:
+  build: true
+```
+
+The build job:
+
+1. Checks out the repository.
+2. Logs in to GitHub Container Registry (`ghcr.io`) using the automatically provided `GITHUB_TOKEN`.
+3. Builds the image from `infrastructure/docker/Dockerfile`.
+4. Publishes these tags:
+
+```text
+ghcr.io/<repository-owner>/ha-nginx:latest
+ghcr.io/<repository-owner>/ha-nginx:<commit-sha>
+```
+
+The workflow requires `packages: write` permission, which is already declared in the workflow. On the first publish, the package may need to be made visible to the intended consumers in the repository's **Packages** settings.
+
 
 ## Configuration
 

@@ -41,9 +41,33 @@ env:
   SERVICE: infrastructure-core
 
 jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Terraform fmt check
+        run: terraform fmt -check -recursive -diff
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint --recursive
+
   validate:
     name: validate
     runs-on: ubuntu-latest
+    needs: lint
     defaults:
       run:
         shell: bash
